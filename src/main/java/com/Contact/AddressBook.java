@@ -1,38 +1,37 @@
 package com.Contact;
 
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.Scanner;
 
-class Contact {
-    private final String name;
-    private final String phoneNumber;
-    private final String email;
-
-    public Contact(String name, String phoneNumber, String email) {
-        this.name = name;
-        this.phoneNumber = phoneNumber;
-        this.email = email;
-    }
-
-    @Override
-    public String toString() {
-
-        return "Name: " + name + ", Phone Number: " + phoneNumber + ", Email: " + email;
-    }
-}
-
 public class AddressBook {
-    private final ArrayList<Contact> contacts;
+    public void addContact() {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter name: ");
+        String name = scanner.nextLine();
+        System.out.print("Enter phone number: ");
+        String phoneNumber = scanner.nextLine();
+        System.out.print("Enter email: ");
+        String email = scanner.nextLine();
 
-    public AddressBook() {
-
-        contacts = new ArrayList<>();
-    }
-
-    public void addContact(Contact contact) {
-
-        contacts.add(contact);
+        try{
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/testdb","root","zaqwer786");
+            PreparedStatement ps = con.prepareStatement("insert into contact values(?,?,?)");
+            ps.setString(1,name);
+            ps.setString(2,phoneNumber);
+            ps.setString(3,email);
+            int s = ps.executeUpdate();
+            if (s>0) {
+                System.out.println("Data inserted in database");
+            }
+            else {
+                System.out.println("Data not inserted");
+            }
+            con.close();
+        }
+        catch (Exception e){
+            System.out.println("Name or Phone Number or Email already exist");
+        }
     }
 
     public void displayContacts() {
@@ -76,6 +75,7 @@ public class AddressBook {
             ps.setString(3,newEmail);
             int updated = ps.executeUpdate();
             System.out.println(updated + " " + "Rows Updated");
+            con.close();
         }
         catch (Exception e) {
             System.out.println("Update Error");
@@ -107,20 +107,27 @@ public class AddressBook {
     }
 
     public void deleteContact() {
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/testdb","root","zaqwer786");
-            Scanner scanner = new Scanner(System.in);
-            System.out.println("Select name to Delete Contact");
-            String selectName = scanner.nextLine();
-            String updateQuery = "delete from testdb.contact where name = " + "\'" + selectName + "\'";
-            PreparedStatement ps = con.prepareStatement(updateQuery);
-            int s = ps.executeUpdate();
-            System.out.println(s + " " + "Rows Deleted");
-            con.close();
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Select name to Delete Contact");
+        String selectName = scanner.nextLine();
+        System.out.println("Are you want to delete " + "\"" + selectName + "\"" + " from Contact: y/n");
+        char res = scanner.next().charAt(0);
+        if (res == 'y') {
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/testdb", "root", "zaqwer786");
+                System.out.println("Select name to Delete Contact");
+                String updateQuery = "delete from testdb.contact where name = " + "\'" + selectName + "\'";
+                PreparedStatement ps = con.prepareStatement(updateQuery);
+                int s = ps.executeUpdate();
+                System.out.println(s + " " + "Rows Deleted");
+                con.close();
+            } catch (Exception e) {
+                System.out.println("Delete Error");
+            }
         }
-        catch (Exception e) {
-            System.out.println("Delete Error");
+        else {
+            System.out.println("Contact not deleted");
         }
     }
 
@@ -144,33 +151,7 @@ public class AddressBook {
 
             switch (choice) {
                 case 1:
-                    System.out.print("Enter name: ");
-                    String name = scanner.nextLine();
-                    System.out.print("Enter phone number: ");
-                    String phoneNumber = scanner.nextLine();
-                    System.out.print("Enter email: ");
-                    String email = scanner.nextLine();
-                    Contact newContact = new Contact(name, phoneNumber, email);
-                    addressBook.addContact(newContact);
-                    try{
-                        Class.forName("com.mysql.cj.jdbc.Driver");
-                        Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/testdb","root","zaqwer786");
-                        PreparedStatement ps = con.prepareStatement("insert into contact values(?,?,?)");
-                        ps.setString(1,name);
-                        ps.setString(2,phoneNumber);
-                        ps.setString(3,email);
-                        int s = ps.executeUpdate();
-                        if (s>0) {
-                            System.out.println("Data inserted in database");
-                        }
-                        else {
-                            System.out.println("Data not inserted");
-                        }
-                        con.close();
-                    }
-                    catch (Exception e){
-                        System.out.println("error");
-                    }
+                    addressBook.addContact();
                     break;
                 case 2:
                     addressBook.displayContacts();
